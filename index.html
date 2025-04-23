@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ABP* Be safe online!</title>
+  <title>ABP* Be Safe Online!</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -39,17 +39,24 @@
 <body>
   <div class="container">
     <h1>Your IP Address & Location</h1>
-    <p id="ip">Loading...</p>
-    <p id="location">Loading...</p>
+    <p id="ip" aria-live="polite">Loading IP address...</p>
+    <p id="location" aria-live="polite">Loading location...</p>
   </div>
   <script>
+    const IP_API_URL = 'https://api.ipify.org?format=json';
+    const GEO_API_URL = 'https://ip-api.com/json/';
+
     async function fetchIPAndLocation() {
       try {
-        const ipResponse = await fetch('https://api.ipify.org?format=json');
+        // Fetch IP address
+        const ipResponse = await fetch(IP_API_URL);
+        if (!ipResponse.ok) throw new Error('Failed to fetch IP address');
         const ipData = await ipResponse.json();
         document.getElementById('ip').textContent = `IP Address: ${ipData.ip}`;
 
-        const geoResponse = await fetch(`https://ip-api.com/json/${ipData.ip}`);
+        // Fetch geolocation based on IP
+        const geoResponse = await fetch(`${GEO_API_URL}${ipData.ip}`);
+        if (!geoResponse.ok) throw new Error('Failed to fetch location');
         const geoData = await geoResponse.json();
 
         if (geoData.status === 'success') {
@@ -58,7 +65,8 @@
           document.getElementById('location').textContent = 'Unable to fetch location';
         }
       } catch (error) {
-        document.getElementById('ip').textContent = 'Unable to fetch IP';
+        console.error('Error:', error);
+        document.getElementById('ip').textContent = 'Unable to fetch IP address';
         document.getElementById('location').textContent = 'Unable to fetch location';
       }
     }
